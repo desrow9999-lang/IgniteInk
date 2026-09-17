@@ -1,4 +1,5 @@
 import streamlit as st
+from openai import OpenAI
 
 # ページの基本設定
 st.set_page_config(
@@ -7,14 +8,13 @@ st.set_page_config(
     layout="centered"
 )
 
-# 洗練されたダークモード風カスタムCSS（チャット内の文字色を強制的にクリアな白に変更）
+# 洗練されたダークモード風カスタムCSS
 st.markdown("""
     <style>
     .stApp {
         background-color: #0e1117;
         color: #f0f6fc;
     }
-    /* メインヘッダー */
     .brand-container {
         padding: 1.2rem 0;
         border-bottom: 1px solid #30363d;
@@ -41,11 +41,9 @@ st.markdown("""
         font-size: 1rem;
         margin-top: 0.5rem;
     }
-    /* ★チャット内の文字をすべてくっきりとした明るい色に強制指定 */
     .stChatMessage p, .stChatMessage span, .stChatMessage div, .stChatMessage li {
         color: #f0f6fc !important;
     }
-    /* ボタンの装飾 */
     .stButton>button {
         background: linear-gradient(135deg, #ff4b4b, #ff8f00);
         color: white;
@@ -68,12 +66,12 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-# サイドバー：わかりやすい設定エリアの案内
-st.sidebar.header("⚙️ System Control")
-st.sidebar.info("💡 **使い方**\n画面左上のメニュー（> またはハンバーガーアイコン）から、いつでも【壁打ちモード】を切り替えられます。")
-st.sidebar.markdown("---")
-st.sidebar.success("⚡ 稼働状態: デモモード稼働中\n🧠 プロフェッショナル仕様")
+# サイドバー：APIキー設定とモード選択
+st.sidebar.header("⚙️ API Configuration")
+api_key = st.sidebar.text_input("OpenAI APIキーを入力", type="password", help="sk-... から始まるOpenAIのAPIキーを入力してください。")
 
+st.sidebar.markdown("---")
+st.sidebar.header("🎯 Ignition Mode")
 mode = st.sidebar.selectbox(
     "壁打ちモードを選択",
     [
@@ -83,10 +81,13 @@ mode = st.sidebar.selectbox(
     ]
 )
 
+st.sidebar.markdown("---")
+st.sidebar.info("💡 **使い方**\n1. サイドバーにOpenAIのAPIキーを入力\n2. モードを選んで下にアイデアを入力！")
+
 # チャット履歴の初期化
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "ようこそ、IgniteInk（イグニットインク）へ！あなたの頭の中にあるアイデアを聞かせてください。容赦ないツッコミとプロのマーケティング視点で、売れる形に昇華させます。"}
+        {"role": "assistant", "content": "ようこそ、IgniteInk（イグニットインク）へ！サイドバーにAPIキーを設定し、あなたの頭の中にあるアイデアを聞かせてください。プロのマーケティング視点で売れる形に昇華させます。"}
     ]
 
 # 過去のメッセージを表示
@@ -94,26 +95,49 @@ for idx, message in enumerate(st.session_state.messages):
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
+# モードに応じたシステムプロンプトの定義
+system_prompts = {
+    "🔥 辛口プロデューサー（壁打ち）": "あなたは超一流の辛口ビジネスプロデューサーです。ユーザーのアイデアの論理の穴やターゲットの甘さを容赦なく突いた上で、どうすれば市場で勝てるか、愛ある具体的な改善案を提示してください。",
+    "📝 売れるnote構成案・変換": "あなたは売れっ子Webライター・編集者です。ユーザーの入力したテーマをもとに、読者の離脱を防ぎ、自然に有料部分やコンバージョンへの導線が作れる「売れるnoteの構成案（タイトル・目次・各章の要点）」を出力してください。",
+    "🚀 SNSポスト一括生成": "あなたはSNSマーケターです。ユーザーのアイデアやnoteのテーマをもとに、タイムラインで思わずスクロールの手を止めてクリックしたくなる、X（旧Twitter）用の魅力的な告知ポスト文面を生成してください。"
+}
+
 # ユーザーの入力を受け付ける
 if prompt := st.chat_input("例：副業初心者に向けたプログラミング学習のnoteを書きたい..."):
-    # ユーザーのメッセージを追加
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user"):
-        st.markdown(prompt)
-
-    # モードに応じた超リアルな自動生成レスポンス
-    if "辛口プロデューサー" in mode:
-        ai_response = f"🔥 **【辛口プロデューサーからの指摘】**\n\n「{prompt}」ですね。率直に言って、その切り口のままでは市場の海に埋もれます。\n\n1. **ターゲットの解像度：** 「初心者向け」ではなく、「30代・未経験の文系会社員」など痛みを特定してください。\n2. **独自のフック：** あなた自身の生々しい失敗談こそが最大の差別化になります。\n\nまずは、あなたが一番苦労したエピソードを教えてください。"
-    elif "売れるnote構成案" in mode:
-        ai_response = f"📝 **【IgniteInk 生成・売れるnote構成案】**\n\nテーマ：「{prompt}」\n\n- **タイトル案：** 【完全ロードマップ】スキルゼロから月5万稼ぐまでの全記録\n- **第1章：** 9割の初心者が最初の1ヶ月で挫折する本当の理由\n- **第2章：** 今日から迷わない、最短ルートの具体的手順\n- **第3章：** 【有料部分】実際に収益を生んだテンプレート\n\nこの構成で読者の離脱を防ぎ、自然な購買導線を引きます。"
+    # APIキーのチェック
+    if not api_key:
+        st.error("⚠️ サイドバーにOpenAIのAPIキーが入力されていません。キーを入力してから再度送信してください。")
     else:
-        ai_response = f"🚀 **【SNS告知ポスト案】**\n\n「{prompt}」についてnoteを公開しました🔥\n\n正直、みんなここを勘違いして損をしています…。元未経験の私が遠回りして気づいた『たった一つの真実』を暴露します👇\n\n#副業 #プログラミング #note"
+        # ユーザーのメッセージを追加
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user"):
+            st.markdown(prompt)
 
-    # アシスタントのメッセージを追加
-    st.session_state.messages.append({"role": "assistant", "content": ai_response})
-    with st.chat_message("assistant"):
-        st.markdown(ai_response)
-        
-        # コピーしやすいエリア
-        with st.expander("📋 この出力をコピーする"):
-            st.text_area("長押しして全選択・コピーしてください", ai_response, height=150, key=f"copy_{len(st.session_state.messages)}")
+        # AIからの応答生成
+        with st.chat_message("assistant"):
+            with st.status("🔥 IgniteInkが思考を燃やしています...", expanded=False):
+                try:
+                    client = OpenAI(api_key=api_key)
+                    
+                    # 過去の会話履歴をOpenAIのフォーマットに変換
+                    messages_payload = [{"role": "system", "content": system_prompts[mode]}]
+                    for msg in st.session_state.messages:
+                        messages_payload.append({"role": msg["role"], "content": msg["content"]})
+
+                    response = client.chat.completions.create(
+                        model="gpt-4o-mini",  # 高速かつコストパフォーマンスに優れた最新モデルを使用
+                        messages=messages_payload,
+                        temperature=0.7
+                    )
+                    ai_response = response.choices[0].message.content
+                except Exception as e:
+                    ai_response = f"❌ エラーが発生しました。APIキーが正しいか確認してください。\n\n詳細: `{str(e)}`"
+
+            st.markdown(ai_response)
+            
+            # コピーしやすいエリア
+            with st.expander("📋 この出力をコピーする"):
+                st.text_area("長押しして全選択・コピーしてください", ai_response, height=150, key=f"copy_{len(st.session_state.messages)}")
+
+        # アシスタントのメッセージを追加
+        st.session_state.messages.append({"role": "assistant", "content": ai_response})
