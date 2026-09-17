@@ -7,7 +7,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# 洗練されたダークモード風カスタムCSS（文字の視認性を完全に最適化）
+# 洗練されたダークモード風カスタムCSS（チャット内の文字色を強制的にクリアな白に変更）
 st.markdown("""
     <style>
     .stApp {
@@ -41,8 +41,8 @@ st.markdown("""
         font-size: 1rem;
         margin-top: 0.5rem;
     }
-    /* チャットメッセージの文字色をくっきり鮮明に */
-    .stChatMessage {
+    /* ★チャット内の文字をすべてくっきりとした明るい色に強制指定 */
+    .stChatMessage p, .stChatMessage span, .stChatMessage div, .stChatMessage li {
         color: #f0f6fc !important;
     }
     /* ボタンの装飾 */
