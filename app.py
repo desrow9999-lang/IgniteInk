@@ -7,22 +7,21 @@ st.set_page_config(
     layout="centered"
 )
 
-# 洗練されたダークモード風カスタムCSS
+# 洗練されたダークモード風カスタムCSS（文字の視認性を完全に最適化）
 st.markdown("""
     <style>
-    /* 全体の背景とフォントの調整 */
     .stApp {
         background-color: #0e1117;
-        color: #e6edf3;
+        color: #f0f6fc;
     }
-    /* メインタイトル */
+    /* メインヘッダー */
     .brand-container {
-        padding: 1.5rem 0;
-        border-bottom: 1px solid #21262d;
-        margin-bottom: 2rem;
+        padding: 1.2rem 0;
+        border-bottom: 1px solid #30363d;
+        margin-bottom: 1.5rem;
     }
     .main-title {
-        font-size: 2.8rem;
+        font-size: 2.6rem;
         font-weight: 900;
         letter-spacing: -0.03em;
         background: linear-gradient(135deg, #ff4b4b, #ff8f00);
@@ -31,18 +30,22 @@ st.markdown("""
         margin-bottom: 0px;
     }
     .brand-ruby {
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         color: #8b949e;
         letter-spacing: 0.1em;
         text-transform: uppercase;
         margin-top: 4px;
     }
     .sub-caption {
-        color: #8b949e;
-        font-size: 1.05rem;
+        color: #c9d1d9;
+        font-size: 1rem;
         margin-top: 0.5rem;
     }
-    /* チャットボックスやボタンの洗練 */
+    /* チャットメッセージの文字色をくっきり鮮明に */
+    .stChatMessage {
+        color: #f0f6fc !important;
+    }
+    /* ボタンの装飾 */
     .stButton>button {
         background: linear-gradient(135deg, #ff4b4b, #ff8f00);
         color: white;
@@ -56,19 +59,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ブランディングヘッダー（読み方を明記）
+# ブランディングヘッダー
 st.markdown("""
     <div class="brand-container">
         <div class="main-title">🔥 IgniteInk</div>
         <div class="brand-ruby">イグニットインク ｜ 思考を火花に変える壁打ちAI</div>
-        <p class="sub-caption">頭の中のモヤモヤを、売れる言葉と戦略へ焼き付ける。</p>
+        <div class="sub-caption">頭の中のモヤモヤを、売れる言葉と戦略へ焼き付ける。</div>
     </div>
 """, unsafe_allow_html=True)
 
-# サイドバー：モード選択とプロ仕様の演出
+# サイドバー：わかりやすい設定エリアの案内
 st.sidebar.header("⚙️ System Control")
+st.sidebar.info("💡 **使い方**\n画面左上のメニュー（> またはハンバーガーアイコン）から、いつでも【壁打ちモード】を切り替えられます。")
 st.sidebar.markdown("---")
-st.sidebar.success("⚡ Status: Online\n\n🧠 Model: Ignite-Pro v2.1")
+st.sidebar.success("⚡ 稼働状態: デモモード稼働中\n🧠 プロフェッショナル仕様")
 
 mode = st.sidebar.selectbox(
     "壁打ちモードを選択",
@@ -82,7 +86,7 @@ mode = st.sidebar.selectbox(
 # チャット履歴の初期化
 if "messages" not in st.session_state:
     st.session_state.messages = [
-        {"role": "assistant", "content": "ようこそ、**IgniteInk（イグニットインク）**へ。あなたの頭の中にあるアイデアを聞かせてください。容赦ないツッコミとプロのマーケティング視点で、売れる形に昇華させます。"}
+        {"role": "assistant", "content": "ようこそ、IgniteInk（イグニットインク）へ！あなたの頭の中にあるアイデアを聞かせてください。容赦ないツッコミとプロのマーケティング視点で、売れる形に昇華させます。"}
     ]
 
 # 過去のメッセージを表示
